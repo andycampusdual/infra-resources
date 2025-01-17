@@ -1,6 +1,6 @@
 locals {
     aws_region = "eu-west-3"
-    backend_bucket_name= "proyect-1-stb-devops-bucket"
+    backend_bucket_name= "proyect-1-agd-devops-bucket"
 }
 
 
