@@ -8,4 +8,4 @@ inputs = {
     module_path="../../../modules/wordpress"
     backend_bucket_name= "proyect-1-agd-devops-bucket"
 }
-    #backend_bucket_name= "proyect-1-stb-devops-bucket"
+    #backend_bucket_name= "proyect-1-agd-devops-bucket"
