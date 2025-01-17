@@ -1,0 +1,43 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: true
+  vars_files:
+    - vars.yml  # Cargar las variables necesarias
+
+  tasks:
+    - name: Ensure wp-config.php is present with correct settings 1
+      ansible.builtin.template:
+        src: ../wp-config.php.j2  # Ruta a la plantilla Jinja2
+        dest: /home/ubuntu/wp-config.php  # Ruta donde se generará el archivo wp-config.php
+        mode: '0644'
+      vars:
+        db_name: "{{ rds_db_name }}"
+        db_user: "{{ rds_username }}"
+        db_password: "{{ rds_password }}"
+        db_host: "{{ rds_endpoint }}"
+
+    - name: Copy docker-compose.yml to the server
+      copy:
+        src: ../docker-compose.yml  # Ruta al archivo docker-compose.yml local
+        dest: /home/ubuntu/docker-compose.yml
+        mode: '0644'
+    
+    
+    - name: Start Docker containers using Docker Compose (v2)
+      ansible.builtin.shell:
+        cmd: docker compose -f /home/ubuntu/docker-compose.yml up -d
+
+    - name: If follow=yes, /path/to/file will be overwritten by contents of foo.conf
+      ansible.builtin.copy:
+        src: /home/ubuntu/wp-config.php
+        dest: /home/ubuntu/wordpress/wp-config.php  # link to /path/to/file
+        follow: no
+        remote_src: yes
+        
+    - name: Restart Docker containers using Docker Compose
+      ansible.builtin.shell:
+        cmd: docker compose -f /home/ubuntu/docker-compose.yml restart
+        chdir: /home/ubuntu
+
+
