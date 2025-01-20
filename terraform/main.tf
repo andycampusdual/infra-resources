@@ -86,15 +86,16 @@ module "lambda" {
 
 module "ec2_wordpress" {
   source       = "../modules/wordpress"
-  module_path  = var.module_path
-  #aws_region   = var.aws_region   # Pasa la variable aws_region
   instance_type = var.instance_type # Pasa la variable instance_type
   ami_id        = var.ami_id       # Pasa la variable ami_id
   private_key_path=var.private_key_path
-  tag_value=var.tag_value
-  #backend_bucket_name=var.backend_bucket_name
+  #tag_value=var.tag_value#########
   aws_region = var.aws_region
   public_key_path = var.public_key_path
+  module_path=var.module_path
+  db_username=var.db_username
+  db_password=var.db_password
+  replicas=var.replicas
 
 }
 
@@ -104,18 +105,3 @@ output "instance_public_ip" {
   description = "Public IP of the EC2 instance"
   value       = module.ec2_wordpress.ec2_public_ip
 }
-output "rds_user"{
-  value = module.ec2_wordpress.rds_user
-  sensitive=true
-}
-
-output "rds_password"{
-  value = module.ec2_wordpress.rds_password
-  sensitive=true
-}
-/*
-output "rds_endpoint"{
-  
-  value = module.ec2_wordpress.rds_endpoint
-
-}*/

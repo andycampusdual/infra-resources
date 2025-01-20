@@ -1,7 +1,8 @@
-name: D.I.C. with terraform
+name: Destroy terraform
 
 on:
-  workflow_dispatch:
+    workflow_dispatch:
+
 
 jobs:
   prepare:
@@ -27,17 +28,14 @@ jobs:
           AWS_ACCESS_KEY_ID_NAME_AUX=$(echo $USERNAME | jq -r '.AWS_ACCESS_KEY_ID')
           AWS_SECRET_ACCESS_KEY_NAME_AUX=$(echo $USERNAME | jq -r '.AWS_SECRET_ACCESS_KEY')
           AWS_SESSION_TOKEN_NAME_AUX=$(echo $USERNAME | jq -r '.AWS_SESSION_TOKEN')
-          AWS_EC2_KEY_NAME_AUX=$(echo $USERNAME | jq -r '.AWS_EC2_KEY')
           
           echo "AWS_ACCESS_KEY_ID_NAME: $AWS_ACCESS_KEY_ID_NAME_AUX"
           echo "AWS_SECRET_ACCESS_KEY_NAME: $AWS_SECRET_ACCESS_KEY_NAME_AUX"
           echo "AWS_SESSION_TOKEN_NAME: $AWS_SESSION_TOKEN_NAME_AUX"
-          echo "AWS_EC2_KEY_NAME: $AWS_EC2_KEY_NAME_AUX"
           
           echo "::set-output name=aws_access_key_id_name::${AWS_ACCESS_KEY_ID_NAME_AUX}"
           echo "::set-output name=aws_secret_access_key_name::${AWS_SECRET_ACCESS_KEY_NAME_AUX}"
           echo "::set-output name=aws_session_token_name::${AWS_SESSION_TOKEN_NAME_AUX}"
-          echo "::set-output name=aws_ec2_key_name::${AWS_EC2_KEY_NAME_AUX}"
 
           # Guardar los valores como variables de entorno
           #echo "AWS_ACCESS_KEY_ID_NAME=${AWS_ACCESS_KEY_ID_NAME_AUX}" | tee $GITHUB_ENV
@@ -48,57 +46,53 @@ jobs:
       aws_access_key_id_name: ${{ steps.prepare.outputs.AWS_ACCESS_KEY_ID_NAME }}
       aws_secret_access_key_name: ${{ steps.prepare.outputs.AWS_SECRET_ACCESS_KEY_NAME }}
       aws_session_token_name: ${{ steps.prepare.outputs.AWS_SESSION_TOKEN_NAME }}
-      aws_ec2_key_name: ${{ steps.prepare.outputs.AWS_EC2_KEY_NAME }}
-
+    
   deploy:
     needs: prepare
     runs-on: ubuntu-latest
+    environment: prod
 
     # Define una variable de entorno para el directorio de trabajo
     env:
-      TF_WORKING_DIR: terraform # Aquí defines tu directorio
-      TF_WORKING_DIR2: modules/wordpress/ansible # Aquí defines tu directorio
+      TF_WORKING_DIR: ./terraform  # Aquí defines tu directorio
       AWS_ACCESS_KEY_ID: ${{ needs.prepare.outputs.aws_access_key_id_name }}
       AWS_SECRET_ACCESS_KEY: ${{ needs.prepare.outputs.aws_secret_access_key_name }}
       AWS_SESSION_TOKEN: ${{ needs.prepare.outputs.aws_session_token_name }}
-      AWS_EC2_KEY: ${{ needs.prepare.outputs.aws_ec2_key_name }}
-
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v1
-
-    - name: Install Ansible
+    - name: Set AWS credentials from secrets
       run: |
-          sudo apt update
-          sudo apt install -y software-properties-common
-          sudo add-apt-repository --yes --update ppa:ansible/ansible
-          sudo apt install -y ansible
-    
-    - name: Set up SSH private key
+        # Usamos los nombres de los secretos obtenidos dinámicamente
+        echo "Fetching AWS credentials from secrets..."
+        #export AWS_ACCESS_KEY_ID=${{ secrets[env.AWS_ACCESS_KEY_ID] }}
+        #export AWS_SECRET_ACCESS_KEY=${{ secrets[env.AWS_SECRET_ACCESS_KEY] }}
+        #export AWS_SESSION_TOKEN=${{ secrets[env.AWS_SESSION_TOKEN] }}
+        mkdir -p ~/.ssh
+        cp id_rsa.pub ~/.ssh/id_rsa.pub
+        
+    - name: Install Terraform
       run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets[env.AWS_EC2_KEY] }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          cp id_rsa.pub ~/.ssh/id_rsa.pub
-
+        sudo apt-get update && sudo apt-get install -y gnupg software-properties-common curl
+        wget -O- https://apt.releases.hashicorp.com/gpg | \
+        gpg --dearmor | \
+        sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
+        gpg --no-default-keyring \
+        --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg \
+        --fingerprint
+        echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+        https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
+        sudo tee /etc/apt/sources.list.d/hashicorp.list
+        sudo apt update
+        sudo apt-get install terraform
 
     - name: Terraform Init
       run: |
-        set -e # Detener la ejecución del script si algún comando falla
         export AWS_ACCESS_KEY_ID=${{ secrets[env.AWS_ACCESS_KEY_ID] }}
         export AWS_SECRET_ACCESS_KEY=${{ secrets[env.AWS_SECRET_ACCESS_KEY] }}
         export AWS_SESSION_TOKEN=${{ secrets[env.AWS_SESSION_TOKEN] }}
-        echo "init"
         terraform init
-        echo "validate"
-        terraform validate
-        echo "apply"
-        terraform apply -auto-approve
+        terraform destroy -auto-approve -var-file=custom-vars.tfvars -var="tag_value=stb${{vars.ENVIROMENT}}"
+      #-backend-config="bucket=${{ secrets.S3_BUCKET_BACKEND }}" -backend-config="region=${{ secrets.AWS_REGION }}"
       working-directory: ${{ env.TF_WORKING_DIR }}  # Usando la variable de entorno
-      env:
-          TF_VAR_private_key: ~/.ssh/id_rsa # Pasamos la clave privada como variable de entorno
-
- 
