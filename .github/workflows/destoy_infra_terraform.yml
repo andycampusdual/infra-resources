@@ -50,7 +50,7 @@ jobs:
   deploy:
     needs: prepare
     runs-on: ubuntu-latest
-    environment: PROD
+    environment: STAGING
 
     # Define una variable de entorno para el directorio de trabajo
     env:
