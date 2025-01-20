@@ -27,13 +27,27 @@ data "aws_subnets" "vpc_subnets" {
 data "aws_availability_zones" "available" {}
 
 #Paso 3: Crear siempre 1 subredes por cada az
-resource "aws_subnet" "subnet" {
+/*resource "aws_subnet" "subnet" {
   count = length(data.aws_availability_zones.available.names)
 
   vpc_id                  = data.aws_vpc.default.id
   cidr_block              = cidrsubnet(data.aws_vpc.default.cidr_block, 8, count.index)
   availability_zone       = element(data.aws_availability_zones.available.names, count.index)
   map_public_ip_on_launch = true
+  tags = {
+    Name = "subnet-${var.tag_value}-${element(data.aws_availability_zones.available.names, count.index)}"
+  }
+}*/
+
+# Paso 3: Crear tres subredes manuales
+resource "aws_subnet" "subnet" {
+  count = 3
+
+  vpc_id                  = data.aws_vpc.default.id
+  cidr_block              = element(["172.31.100.0/24", "172.31.101.0/24", "172.31.102.0/24"], count.index)
+  availability_zone       = element(data.aws_availability_zones.available.names, count.index)
+  map_public_ip_on_launch = true
+
   tags = {
     Name = "subnet-${var.tag_value}-${element(data.aws_availability_zones.available.names, count.index)}"
   }
