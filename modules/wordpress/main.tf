@@ -39,7 +39,7 @@ data "aws_availability_zones" "available" {}
   }
 }*/
 
-# Paso 3: Crear tres subredes manuales
+# Paso 3: Crear tres subredes manualesss
 resource "aws_subnet" "subnet" {
   count = 3
 
