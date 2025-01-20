@@ -3,7 +3,7 @@ name: D.I.C. with terraform
 on:
   #push:
     #branches:
-    3- staging
+    #- staging
   workflow_dispatch:
 
 jobs:
