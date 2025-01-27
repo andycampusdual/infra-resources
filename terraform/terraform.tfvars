@@ -17,3 +17,5 @@ vpc_cidr = "10.17.0.0/16"
 #tag_value="stb"
 #public_key_path="~/.ssh/id_rsa.pub"
 module_path="../modules/wordpress/"
+vpc_id="vpc-002427d5be38383d7"
+subnets=["subnet-0717aac9526c9ff4b", "subnet-00f809b073695b201"]

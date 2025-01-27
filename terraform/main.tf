@@ -84,7 +84,7 @@ module "lambda" {
 */
 
 
-module "ec2_wordpress" {
+/*module "ec2_wordpress" {
   source       = "../modules/wordpress"
   instance_type = var.instance_type # Pasa la variable instance_type
   ami_id        = var.ami_id       # Pasa la variable ami_id
@@ -104,4 +104,14 @@ module "ec2_wordpress" {
 output "instance_public_ip" {
   description = "Public IP of the EC2 instance"
   value       = module.ec2_wordpress.ec2_public_ip
+}*/
+
+module "nginx_service"{
+  source = "../modules/ecs_provisional_resources"
+  tag_value=var.tag_value
+  aws_region = var.aws_region
+  vpc_id=var.vpc_id
+  subnets=var.subnets
+  #sg=var.sg
 }
+ 
