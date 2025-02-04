@@ -1,3 +1,4 @@
+[![CI Pipeline](https://github.com/andycampusdual/infra-resources/actions/workflows/ci.yml/badge.svg)](https://github.com/andycampusdual/infra-resources/actions/workflows/ci.yml)
 # Infra Resources
 
 Este repositorio contiene los recursos necesarios para la infraestructura base del proyecto. Aquí se definen las configuraciones y scripts necesarios para implementar y gestionar la infraestructura utilizando herramientas de Infraestructura como Código (IaC).
