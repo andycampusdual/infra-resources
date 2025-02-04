@@ -1,9 +1,10 @@
 name: D.I.C. with terraform
 
 on:
-  #push:
-    #branches:
-    #- main
+  push:
+    branches:
+    - main
+
   workflow_dispatch:
 
 jobs:
@@ -56,7 +57,7 @@ jobs:
   deploy:
     needs: prepare
     runs-on: ubuntu-latest
-    environment: PROD
+    environment: DEV
 
     # Define una variable de entorno para el directorio de trabajo
     env:
