@@ -1,9 +1,10 @@
 name: D.I.C. with terraform
 
 on:
-  #push:
-    #branches:
-    #- dev
+  push:
+    branches:
+    - main
+
   workflow_dispatch:
 
 jobs:

@@ -44,7 +44,7 @@ resource "aws_subnet" "subnet" {
   count = 3
 
   vpc_id                  = data.aws_vpc.default.id
-  cidr_block              = element(["172.31.100.0/24", "172.31.101.0/24", "172.31.102.0/24"], count.index)
+  cidr_block              = element(["172.31.140.0/24", "172.31.141.0/24", "172.31.142.0/24"], count.index)
   availability_zone       = element(data.aws_availability_zones.available.names, count.index)
   map_public_ip_on_launch = true
 
